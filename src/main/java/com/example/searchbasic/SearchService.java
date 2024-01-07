@@ -12,6 +12,10 @@ public class SearchService {
         this.searchKeywordRepository = searchKeywordRepository;
     }
  @Transactional
-    public SearchKeywordDto save
+    public SearchKeywordDto save(String keyword) {
+        SearchKeyword searchKeyword = searchKeywordRepository.findById(keyword).orElse(new SearchKeyword(keyword,0L));
+        searchKeyword.increaseSearchCnt();
+        return new SearchKeywordDto(searchKeywordRepository.save(searchKeyword));
+    }
 
 }
