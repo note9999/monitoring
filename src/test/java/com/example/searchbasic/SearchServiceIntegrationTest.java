@@ -48,5 +48,6 @@ class SearchServiceIntegrationTest {
         //Assertions.assertEquals(expected, actual): 두 값이 동일한지 확인하는 메서드
     }
 
+    @Test
 
 }
