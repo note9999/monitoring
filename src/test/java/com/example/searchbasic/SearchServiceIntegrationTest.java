@@ -54,10 +54,15 @@ class SearchServiceIntegrationTest {
     @Test
     @DisplayName("존재하는 키워드가 동시에 검색되는 케이스")
     void exist_keyword_concurrently() {
+
         AtomicReference<Throwable> e = new AtomicReference<>();
+        //AtomicReference: Java에서 다중 스레드 환경에서 안전하게 값 변경하고 읽을 수 있게하는 클래스
+        // 특정 데이터 타입의 값을 원자적(atomic)갱신 할 수 있도록 지원함.
+        // 여러 스레드가 동시에 해당값을 수정하거나 읽어도 안전하게 작동!!
 
         //when
         CompletableFuture.allOf(
+                //CompletableFuture
                 CompletableFuture.runAsync(() -> searchService.save(existKeyword)),
                 CompletableFuture.runAsync(() -> searchService.save(existKeyword))
         ).exceptionally(throwable -> {
