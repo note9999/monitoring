@@ -7,6 +7,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
@@ -69,6 +70,11 @@ class SearchServiceIntegrationTest {
             e.set(throwable.getCause());
             return null;
         }).join();
+
+        //then
+        Assertions.assertNotNull(e.get());
+        Assertions.assertInstanceOf(ObjectOptimisticLockingFailureException.class, e.get());
+        Assertions.assertEquals(existSearchCnt + 1, searchKeywordRepository.findById(existKeyword).get().getSearchCnt());
 
     }
 }
