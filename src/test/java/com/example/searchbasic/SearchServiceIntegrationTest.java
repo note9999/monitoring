@@ -8,6 +8,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicReference;
+
 @SpringBootTest
 class SearchServiceIntegrationTest {
 
@@ -22,7 +25,7 @@ class SearchServiceIntegrationTest {
     private final Long existSearchCnt = 22L;
 
     @BeforeEach
-    // @BeforeEach?
+        // @BeforeEach?
         // 테스트 메서드가 실행되기 전에 실행되는 메서드를 정의할 때 사용
         // 주로 초기화 작업을 수행하여 각 테스트 메서드가 독립적으로 실행될 수 있도록 함
         // 테스트 메서드 간에 서로 영향을 주지 않고 독립적으로 실행하기 위해 사용
@@ -49,5 +52,18 @@ class SearchServiceIntegrationTest {
     }
 
     @Test
+    @DisplayName("존재하는 키워드가 동시에 검색되는 케이스")
+    void exist_keyword_concurrently() {
+        AtomicReference<Throwable> e = new AtomicReference<>();
 
+        //when
+        CompletableFuture.allOf(
+                CompletableFuture.runAsync(() -> searchService.save(existKeyword)),
+                CompletableFuture.runAsync(() -> searchService.save(existKeyword))
+        ).exceptionally(throwable -> {
+            e.set(throwable.getCause());
+            return null;
+        }).join();
+
+    }
 }
