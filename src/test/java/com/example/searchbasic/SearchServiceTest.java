@@ -14,7 +14,7 @@ class SearchServiceTest {
     @InjectMocks
     private SearchService searchService;
 
-    Mock
+    @Mock
     private SearchKeywordRepository searchKeywordRepository;
 
     @Test

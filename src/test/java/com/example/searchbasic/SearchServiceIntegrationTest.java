@@ -32,8 +32,8 @@ class SearchServiceIntegrationTest {
         // 테스트 메서드 간에 서로 영향을 주지 않고 독립적으로 실행하기 위해 사용
 
     void setUp() {
-        SearchKeywordRepository.deleteAll();
-        SearchKeywordRepository.save(new SearchKeyword(existKeyword, existSearchCnt));
+        searchKeywordRepository.deleteAll();
+        searchKeywordRepository.save(new SearchKeyword(existKeyword, existSearchCnt));
 
     }
 
