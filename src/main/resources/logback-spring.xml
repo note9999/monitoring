@@ -1,105 +1,68 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<configuration scan="true" scanPeriod="60 seconds" debug="true">
-    <!-- use Spring default values -->
-    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration>
+    <conversionRule conversionWord="clr" converterClass="org.springframework.boot.logging.logback.ColorConverter"/>
+    <conversionRule conversionWord="wex"
+                    converterClass="org.springframework.boot.logging.logback.WhitespaceThrowableProxyConverter"/>
+    <conversionRule conversionWord="wEx"
+                    converterClass="org.springframework.boot.logging.logback.ExtendedWhitespaceThrowableProxyConverter"/>
+    <property name="LOG_PATTERN"
+              value="${LOG_PATTERN:-%clr(%d{${LOG_DATEFORMAT_PATTERN:-yyyy-MM-dd HH:mm:ss.SSS}}){blue} %clr(${LOG_LEVEL_PATTERN:-%5p}) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}}"/>
 
-    <!-- springProfile 태그를 사용하여 profile 별 property 값 설정 -->
-    <springProfile name="local">
-        <!-- local log file path -->
-        <property name="CONSOLE_LOG_PATTERN" value="${CONSOLE_LOG_PATTERN}"/>
-    </springProfile>
-    <springProfile name="!local">
-        <!-- dev log file path -->
-        <property name="CONSOLE_LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%thread] %logger{36} - %m%n"/>
-    </springProfile>
-
-    <!-- log file path -->
-    <property name="LOG_PATH" value="/home/instance/log"/>
-    <!-- log file name -->
-    <property name="LOG_FILE_NAME" value="log"/>
+    <springProperty name="AWS_ACCESS_KEY" source="cloud.aws.credentials.accessKey"/>
+    <springProperty name="AWS_SECRET_KEY" source="cloud.aws.credentials.secretKey"/>
 
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <layout class="ch.qos.logback.classic.PatternLayout">
-            <Pattern>${CONSOLE_LOG_PATTERN}</Pattern>
+            <Pattern>${LOG_PATTERN}</Pattern>
         </layout>
     </appender>
 
-    <!-- File Appender -->
-    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <!-- 파일경로 설정 -->
-        <file>${LOG_PATH}/${LOG_FILE_NAME}.log</file>
-
-        <!-- 출력패턴 설정 -->
-        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <pattern>${FILE_LOG_PATTERN}</pattern>
-        </encoder>
-
-        <!-- Rolling 정책 -->
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <!-- .gz .zip 등을 넣으면 자동 일자별 로그 파일 압축 -->
-            <fileNamePattern>${LOG_PATH}/${LOG_FILE_NAME}.%d{yyyy-MM-dd}_%i.gz</fileNamePattern>
-            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
-                <!-- 파일당 최고 용량 kb, mb, gb -->
-                <maxFileSize>10KB</maxFileSize>
-            </timeBasedFileNamingAndTriggeringPolicy>
-            <!-- 일자별 로그 파일 최대 보관주기(~일), 해당 설정일 이상된 파일은 자동으로 제거 -->
-            <maxHistory>30</maxHistory>
-            <!-- 전체 파일 크기를 제어하며, 전체 크기 제한을 조과하면 가장 오래된 파일을 삭제 -->
-            <totalSizeCap>1GB</totalSizeCap>
-        </rollingPolicy>
-    </appender>
-
-    <!-- AWS Log -->
-    <appender name="ASYNC_AWS_LOGS" class="ca.pjer.logback.AwsLogsAppender">
+    <appender name="aws_cloud_watch_log" class="ca.pjer.logback.AwsLogsAppender">
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
             <level>ERROR</level>
         </filter>
         <layout>
-            <pattern>%d{yyyyMMdd'T'HHmmss} %thread %level %logger{15} %msg%n</pattern>
+            <pattern>[%thread] [%date] [%level] [%file:%line] - %msg%n</pattern>
         </layout>
-        <if condition='property("spring.profiles.active").contains("local")'>
-            <then>
-                <!-- local 용 로그 그룹명 -->
-                <logGroupName>${Log_Group_Name:local}</logGroupName>
-            </then>
-        </if>
-        <if condition='property("spring.profiles.active").contains("dev")'>
-            <then>
-                <!-- dev 용 로그 그룹명 -->
-                <logGroupName>${Log_Group_Name:dev}</logGroupName>
-            </then>
-        </if>
-        <if condition='property("spring.profiles.active").contains("prod")'>
-            <then>
-                <!-- prod 용 로그 그룹명 -->
-                <logGroupName>${Log_Group_Name:prod}</logGroupName>
-            </then>
-        </if>
-        <logStreamUuidPrefix>error-</logStreamUuidPrefix>
+        <logGroupName>Marryting-log</logGroupName>
+        <logStreamUuidPrefix>Marryting-log-</logStreamUuidPrefix>
         <logRegion>ap-northeast-2</logRegion>
         <maxBatchLogEvents>50</maxBatchLogEvents>
         <maxFlushTimeMillis>30000</maxFlushTimeMillis>
         <maxBlockTimeMillis>5000</maxBlockTimeMillis>
         <retentionTimeDays>0</retentionTimeDays>
+        <accessKeyId>${AWS_ACCESS_KEY}</accessKeyId>
+        <secretAccessKey>${AWS_SECRET_KEY}</secretAccessKey>
     </appender>
 
-    <springProfile name="dev">
-        <logger name="org.springframework" level="INFO" />
-        <logger name="inc.bfactory.kpop" level="INFO"/>
-        <root level="INFO">
-            <appender-ref ref="FILE"/>
-            <appender-ref ref="ASYNC_AWS_LOGS" />
+    <springProfile name="local,dev">
+        <root level="info">
+            <appender-ref ref="CONSOLE"/>
         </root>
+
+        <logger name="com.amazonaws.util.EC2MetadataUtils" level="error" additivity="false">
+        </logger>
+
+        <logger name="mashup.spring.jsmr" level="debug" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+        </logger>
+
+        <logger name="mashup.spring.jsmr" level="error" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="aws_cloud_watch_log"/>
+        </logger>
     </springProfile>
 
-    <root level="INFO">
-        <appender-ref ref="CONSOLE"/>
-    </root>
+    <springProfile name="prod">
+        <root level="info">
+            <appender-ref ref="CONSOLE"/>
+        </root>
 
-    <!--    <logger name="org.testcontainers" level="INFO"/>-->
-    <!--    &lt;!&ndash; The following logger can be used for containers logs since 1.18.0 &ndash;&gt;-->
-    <!--    <logger name="tc" level="INFO"/>-->
-    <!--    <logger name="com.github.dockerjava" level="WARN"/>-->
-    <!--    <logger name="com.github.dockerjava.zerodep.shaded.org.apache.hc.client5.http.wire" level="OFF"/>-->
+        <logger name="com.amazonaws.util.EC2MetadataUtils" level="error" additivity="false">
+        </logger>
 
+        <logger name="mashup.spring.jsmr" level="debug" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+        </logger>
+    </springProfile>
 </configuration>

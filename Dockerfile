@@ -9,3 +9,4 @@ COPY build/libs/${SERVICE_NAME}-${APP_VERSION}.jar /app.jar
 RUN chmod +x /app.jar
 
 ENTRYPOINT ["java", "-Dspring.profiles.active=${SPRING_PROFILE_ACTIVE}", "-jar", "/app.jar"]
+
