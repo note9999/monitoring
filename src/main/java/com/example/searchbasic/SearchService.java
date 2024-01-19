@@ -1,11 +1,8 @@
 package com.example.searchbasic;
 
-
-import jakarta.transaction.Transactional;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-@Slf4j
 @Service
 public class SearchService {
     private final SearchKeywordRepository searchKeywordRepository;
@@ -13,14 +10,11 @@ public class SearchService {
     public SearchService(SearchKeywordRepository searchKeywordRepository) {
         this.searchKeywordRepository = searchKeywordRepository;
     }
- @Transactional
+
+    @Transactional
     public SearchKeywordDto save(String keyword) {
-        SearchKeyword searchKeyword = searchKeywordRepository.findById(keyword).orElse(new SearchKeyword(keyword,0L));
-
+        SearchKeyword searchKeyword = searchKeywordRepository.findById(keyword).orElse(new SearchKeyword(keyword, 0L));
         searchKeyword.increaseSearchCnt();
-        log.info("[SearchService.save] search count = {}", searchKeyword.getSearchCnt());
-
         return new SearchKeywordDto(searchKeywordRepository.save(searchKeyword));
     }
-
 }

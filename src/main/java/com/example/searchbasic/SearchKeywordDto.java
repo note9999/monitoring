@@ -1,6 +1,5 @@
 package com.example.searchbasic;
 
-
 import lombok.Getter;
 
 @Getter
