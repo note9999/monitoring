@@ -1,7 +1,8 @@
-<!-- logback.xml -->
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <appender name="ASYNC_AWS_LOGS" class="ca.pjer.logback.AwsLogsAppender">
+        <awsAccessKeyId>AKIARNN7AEECUB5A475U</awsAccessKeyId>
+        <awsSecretKey>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</awsSecretKey>
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
             <level>ERROR</level>
         </filter>
@@ -11,19 +12,19 @@
         <if condition='property("spring.profiles.active").contains("local")'>
             <then>
                 <!-- local 용 로그 그룹명 -->
-                <logGroupName>${Log_Group_Name:local}</logGroupName>
+                <logGroupName>searchbasic-error</logGroupName>
             </then>
         </if>
         <if condition='property("spring.profiles.active").contains("dev")'>
             <then>
                 <!-- dev 용 로그 그룹명 -->
-                <logGroupName>${Log_Group_Name:dev}</logGroupName>
+                <logGroupName>searchbasic-error</logGroupName>
             </then>
         </if>
         <if condition='property("spring.profiles.active").contains("prod")'>
             <then>
                 <!-- prod 용 로그 그룹명 -->
-                <logGroupName>${Log_Group_Name:prod}</logGroupName>
+                <logGroupName>searchbasic-error</logGroupName>
             </then>
         </if>
         <logStreamUuidPrefix>error-</logStreamUuidPrefix>
